@@ -1,16 +1,13 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-import torch.utils.data
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from libv1 import DataLoader, default_collate
 
 
-# Press the green button in the gutter to run the script.
+def demo_test_1():
+    from simplev1_datatset import SimpleV1Dataset
+    simple_dataset = SimpleV1Dataset()
+    dataloader = DataLoader(simple_dataset, batch_size=2, collate_fn=default_collate)
+    for data in dataloader:
+        print(data)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    demo_test_1()

@@ -13,8 +13,7 @@ class Sampler(object):
 
 
 class BatchSampler(Sampler):
-    def __init__(self, sampler, batch_size, drop_last, data_source):
-        super(BatchSampler, self).__init__(data_source)
+    def __init__(self, sampler, batch_size, drop_last):
         self.sampler = sampler
         self.batch_size = batch_size
         self.drop_last = drop_last

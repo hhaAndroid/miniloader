@@ -1,5 +1,4 @@
 from torch.utils.data._utils.collate import default_collate
-
 from .sampler import BatchSampler, SequentialSampler, RandomSampler
 
 
@@ -36,15 +35,18 @@ class DataLoader(object):
         self.batch_size = batch_size
         self.drop_last = drop_last
         self.sampler = sampler
-        self.batch_sampler = batch_sampler
+        self.batch_sampler = iter(batch_sampler)
 
         if collate_fn is None:
             collate_fn = default_collate
-
         self.collate_fn = collate_fn
 
-    @property
-    def _auto_collation(self):
-        return self.batch_sampler is not None
+    def __next__(self):
+        index = next(self.batch_sampler)
+        data = [self.dataset[idx] for idx in index]
+        data=self.collate_fn(data)
+        return data
 
+    def __iter__(self):
+        return self
 
