@@ -41,12 +41,13 @@ class DataLoader(object):
             collate_fn = default_collate
         self.collate_fn = collate_fn
 
+    # 核心
     def __next__(self):
         index = next(self.batch_sampler)
         data = [self.dataset[idx] for idx in index]
-        data=self.collate_fn(data)
+        data = self.collate_fn(data)
         return data
 
+    # 返回自身，因为自身实现了 __next__
     def __iter__(self):
         return self
-
