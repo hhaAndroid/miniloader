@@ -1,7 +1,7 @@
+import time
 from libv2 import DataLoader, default_collate
 
-from torch.utils.data import DataLoader
-import time
+# from torch.utils.data import DataLoader
 
 
 def demo_test_1():

@@ -45,6 +45,7 @@ class DataLoader(object):
 
         self.num_workers = num_workers
         self.prefetch_factor = prefetch_factor
+        self.persistent_workers = persistent_workers
         self.timeout = timeout
         self.worker_init_fn = worker_init_fn
 

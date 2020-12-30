@@ -4,6 +4,7 @@ import itertools
 import os
 from collections import namedtuple
 import random
+from torch.utils.data import _utils
 from torch._utils import ExceptionWrapper
 from torch._six import queue
 
@@ -14,14 +15,14 @@ class _BaseDataLoaderIter(object):
     def __init__(self, loader):
         self._dataset = loader.dataset
         self._drop_last = loader.drop_last
-        self._index_sampler = loader._index_sampler  # BatchSampler
+        self._index_sampler = loader.batch_sampler  # BatchSampler
         self._num_workers = loader.num_workers
         self._prefetch_factor = loader.prefetch_factor
         self._timeout = loader.timeout
         self._collate_fn = loader.collate_fn
         self._persistent_workers = loader.persistent_workers
         self._sampler_iter = iter(self._index_sampler)
-        self._base_seed = torch.empty((), dtype=torch.int64).random_(generator=loader.generator).item()
+        self._base_seed = torch.empty((), dtype=torch.int64).random_().item()
         self._num_yielded = 0
 
     def __iter__(self):
@@ -82,6 +83,7 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
         assert self._num_workers > 0
         # 预取 batch 长度,默认是2，如果 num_worker太多，则开始缓存的 batch 数据会很大，导致 OOM
         assert self._prefetch_factor > 0
+        self._shutdown = False
         # 默认采用 torch 的多进程
         multiprocessing_context = multiprocessing
         self._worker_init_fn = loader.worker_init_fn  # 每个 worker 的初始化函数
