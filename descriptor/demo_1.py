@@ -26,35 +26,24 @@ def demo_2():
         x = 4
 
         def __init__(self):
-            self.y = 5
+            self.x = 5
 
         def __getattribute__(self, item):
-            print('MyClass.__getattribute__')
+            print('MyClass.__getattribute__',item)
             return super(MyClass, self).__getattribute__(item)
-            # return object.__getattribute__(self, item)
 
         def __getattr__(self, item):
-            print('MyClass.__getattr__')
+            print('MyClass.__getattr__',item)
             raise AttributeError(f'{type(self).__name__} object had not attribute \'{item}\'')
 
         def __setattr__(self, key, value):
-            print('MyClass.__setattr__')
+            print('MyClass.__setattr__',key)
             # self.key = value # 错误
             self.__dict__[key] = value
 
-    print('开始实例化')
     cls = MyClass()
-    print('--类属性访问--')
-    print(MyClass.x)
-    print('--类属性赋值--')
-    MyClass.x = 1
-    print('--实例属性访问--')
-    print(cls.y)
-    print('--实例属性赋值--')
-    cls.y = 1
-    print('--访问不存在的属性--')
-    print(MyClass.k)
-    print(cls.k)
+    print(cls.__dict__)
+    print(cls.__class__.__dict__)
 
 
 def demo_3():
@@ -172,5 +161,145 @@ def demo_7():
     print(fpp.__get__(A)())  # 类似于fpp(A)
 
 
+
+
+def demo_8():
+
+    class Property(object):
+        "Emulate PyProperty_Type() in Objects/descrobject.c"
+
+        def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+            print('-----')
+            print('fget', fget)
+            print('fset', fset)
+            print('fdel', fdel)
+            print('-----')
+            self.fget = fget
+            self.fset = fset
+            self.fdel = fdel
+            if doc is None and fget is not None:
+                doc = fget.__doc__
+            self.__doc__ = doc
+
+        def __get__(self, obj, objtype=None):
+            print('Property.__get__')
+            if obj is None:
+                return self
+            if self.fget is None:
+                raise AttributeError("unreadable attribute")
+            return self.fget(obj)
+
+        def __set__(self, obj, value):
+            print('Property.__set__',obj)
+            if self.fset is None:
+                raise AttributeError("can't set attribute")
+            self.fset(obj, value)
+
+        def __delete__(self, obj):
+            print('Property.__delete__')
+            if self.fdel is None:
+                raise AttributeError("can't delete attribute")
+            self.fdel(obj)
+
+        def getter(self, fget):
+            print('Property.getter')
+            return type(self)(fget, self.fset, self.fdel, self.__doc__)
+
+        def setter(self, fset):
+            print('Property.setter')
+            return type(self)(self.fget, fset, self.fdel, self.__doc__)
+
+        def deleter(self, fdel):
+            print('Property.deleter')
+            return type(self)(self.fget, self.fset, fdel, self.__doc__)
+
+    class C(object):
+
+
+        def __init__(self):
+            self._x = None
+
+        @Property
+        def x(self):
+            print('C.property')
+            return self._x
+
+        @x.setter
+        def x(self, value):
+            print('C.setter')
+            self._x = value
+
+        @x.deleter
+        def x(self):
+            print('C.deleter')
+            del self._x
+
+    c=C()
+    print(C.__dict__['x'])
+    print(c.__dict__)
+    c.x=8
+    print(c.x)
+    del c.x
+
+
+    class C(object):
+        def __init__(self):
+            self._x = None
+
+
+        def getx(self):
+            print('C.property')
+            return self._x
+
+
+        def setx(self, value):
+            print('C.setter')
+            self._x = value
+
+
+        def delx(self):
+            print('C.deleter')
+            del self._x
+
+        x = Property(getx,setx,delx)
+
+    c = C()
+    c.x=8
+    print(c.x)
+    del c.x
+
+
+    # 模拟显示过程
+    class C(object):
+
+
+        def __init__(self):
+            self._x = None
+
+        def getx(self):
+            print('C.property')
+            return self._x
+
+
+        def setx(self, value):
+            print('C.setter')
+            self._x = value
+
+
+        def delx(self):
+            print('C.deleter')
+            del self._x
+
+    x_get=Property(C.getx)
+    x_set=x_get.setter(C.setx)
+    x_del=x_set.deleter(C.delx)
+
+    x_set.__set__(C(),8)
+    print(x_get.__get__(C()))
+    x_del.__delete__(C())
+
+
 if __name__ == '__main__':
-    demo_7()
+    # demo_2()
+    demo_8()
+
